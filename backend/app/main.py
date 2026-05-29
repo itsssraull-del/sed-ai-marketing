@@ -18,7 +18,9 @@ from app.api.routes import (
 logging.basicConfig(level=logging.INFO if not settings.DEBUG else logging.DEBUG)
 logger = logging.getLogger("sed-ai")
 
+
 async def seed_admin() -> None:
+    """Create initial admin user if none exists."""
     import uuid
     from sqlalchemy import select
     from app.models.user import User, UserRole
@@ -26,18 +28,18 @@ async def seed_admin() -> None:
 
     admin_email = "admin@sed.energy"
     async with AsyncSessionLocal() as db:
-                result = await db.execute(select(User).where(User.email == admin_email))
-                if result.scalar_one_or_none():
-                                logger.info("Admin user already exists")
-                                return
+        result = await db.execute(select(User).where(User.email == admin_email))
+        if result.scalar_one_or_none():
+            logger.info("Admin user already exists")
+            return
         user = User(
-                        id=uuid.uuid4(),
-                        email=admin_email,
-                        full_name="SED Admin",
-                        hashed_password=hash_password("SedAdmin2025!"),
-                        role=UserRole.SUPER_ADMIN,
-                        is_active=True,
-                        is_verified=True,
+            id=uuid.uuid4(),
+            email=admin_email,
+            full_name="SED Admin",
+            hashed_password=hash_password("SedAdmin2025!"),
+            role=UserRole.SUPER_ADMIN,
+            is_active=True,
+            is_verified=True,
         )
         db.add(user)
         await db.commit()
@@ -47,12 +49,12 @@ async def seed_admin() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
-    logger.info("🔆 Starting SED Energy AI Marketing System...")
+    logger.info("Starting SED Energy AI Marketing System...")
     await create_tables()
-    logger.info("✅ Database tables ready")
+    logger.info("Database tables ready")
     await seed_admin()
     yield
-    logger.info("🔌 Shutting down...")
+    logger.info("Shutting down...")
 
 
 app = FastAPI(
@@ -67,7 +69,7 @@ app = FastAPI(
     redoc_url="/api/redoc" if settings.DEBUG else None,
 )
 
-# ─── Middleware ──────────────────────────────────────────────────────────────
+# Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -87,18 +89,18 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# ─── Routes ─────────────────────────────────────────────────────────────────
+# Routes
 API_PREFIX = "/api/v1"
 
-app.include_router(auth.router,         prefix=f"{API_PREFIX}/auth",        tags=["Authentication"])
-app.include_router(content.router,      prefix=f"{API_PREFIX}/content",     tags=["Content"])
-app.include_router(social.router,       prefix=f"{API_PREFIX}/social",      tags=["Social Media"])
-app.include_router(analytics.router,    prefix=f"{API_PREFIX}/analytics",   tags=["Analytics"])
-app.include_router(stock.router,        prefix=f"{API_PREFIX}/stock",       tags=["Stock"])
-app.include_router(whatsapp.router,     prefix=f"{API_PREFIX}/whatsapp",    tags=["WhatsApp"])
-app.include_router(knowledge.router,    prefix=f"{API_PREFIX}/knowledge",   tags=["Knowledge Base"])
-app.include_router(media.router,        prefix=f"{API_PREFIX}/media",       tags=["Media Generation"])
-app.include_router(settings_router.router, prefix=f"{API_PREFIX}/settings", tags=["Settings"])
+app.include_router(auth.router,            prefix=f"{API_PREFIX}/auth",        tags=["Authentication"])
+app.include_router(content.router,         prefix=f"{API_PREFIX}/content",     tags=["Content"])
+app.include_router(social.router,          prefix=f"{API_PREFIX}/social",      tags=["Social Media"])
+app.include_router(analytics.router,       prefix=f"{API_PREFIX}/analytics",   tags=["Analytics"])
+app.include_router(stock.router,           prefix=f"{API_PREFIX}/stock",       tags=["Stock"])
+app.include_router(whatsapp.router,        prefix=f"{API_PREFIX}/whatsapp",    tags=["WhatsApp"])
+app.include_router(knowledge.router,       prefix=f"{API_PREFIX}/knowledge",   tags=["Knowledge Base"])
+app.include_router(media.router,           prefix=f"{API_PREFIX}/media",       tags=["Media Generation"])
+app.include_router(settings_router.router, prefix=f"{API_PREFIX}/settings",    tags=["Settings"])
 
 
 @app.get("/health")
