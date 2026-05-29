@@ -9,7 +9,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.database import create_tables
+from app.database import create_tables, AsyncSessionLocal
 from app.api.routes import (
     auth, content, social, analytics, stock,
     whatsapp, knowledge, media, settings as settings_router
@@ -18,6 +18,31 @@ from app.api.routes import (
 logging.basicConfig(level=logging.INFO if not settings.DEBUG else logging.DEBUG)
 logger = logging.getLogger("sed-ai")
 
+async def seed_admin() -> None:
+    import uuid
+    from sqlalchemy import select
+    from app.models.user import User, UserRole
+    from app.core.security import hash_password
+
+    admin_email = "admin@sed.energy"
+    async with AsyncSessionLocal() as db:
+                result = await db.execute(select(User).where(User.email == admin_email))
+                if result.scalar_one_or_none():
+                                logger.info("Admin user already exists")
+                                return
+        user = User(
+                        id=uuid.uuid4(),
+                        email=admin_email,
+                        full_name="SED Admin",
+                        hashed_password=hash_password("SedAdmin2025!"),
+                        role=UserRole.SUPER_ADMIN,
+                        is_active=True,
+                        is_verified=True,
+        )
+        db.add(user)
+        await db.commit()
+        logger.info("Admin user created: admin@sed.energy")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +50,7 @@ async def lifespan(app: FastAPI):
     logger.info("🔆 Starting SED Energy AI Marketing System...")
     await create_tables()
     logger.info("✅ Database tables ready")
+    await seed_admin()
     yield
     logger.info("🔌 Shutting down...")
 
