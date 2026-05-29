@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.env
+.env.local
+.env.*.local
+*.egg-info/
+dist/
+build/
+
+# Docker
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Secrets
+*.pem
+*.key
+*.cert
+ssl/
+
+# Alembic (keep versions, skip cache)
+backend/alembic/__pycache__/
