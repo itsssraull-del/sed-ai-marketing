@@ -108,7 +108,11 @@ class VectorStoreService:
         filter_metadata: Optional[dict] = None,
     ) -> list[dict]:
         """Semantic search over the knowledge base"""
-        query_embedding = await self.embed_text(query)
+        try:
+            query_embedding = await self.embed_text(query)
+        except Exception as emb_err:
+            logger.warning(f"Embedding failed (skipping RAG search): {emb_err}")
+            return []
         index = self._get_index()
 
         response = index.query(
@@ -138,7 +142,17 @@ class VectorStoreService:
         """
         Specialised search for content generation context.
         Returns formatted context string for injection into AI prompts.
+        Falls back to empty string if the vector store / embeddings are unavailable.
         """
+        try:
+            return await self._search_for_content_generation(topic, platform, product_refs)
+        except Exception as e:
+            logger.warning(f"RAG context unavailable (proceeding without it): {e}")
+            return ""
+
+    async def _search_for_content_generation(
+        self, topic: str, platform: str, product_refs: list = None
+    ) -> str:
         queries = [
             topic,
             f"SED Energy {topic}",
