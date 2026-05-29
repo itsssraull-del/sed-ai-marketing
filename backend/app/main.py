@@ -52,7 +52,10 @@ async def lifespan(app: FastAPI):
     logger.info("Starting SED Energy AI Marketing System...")
     await create_tables()
     logger.info("Database tables ready")
-    await seed_admin()
+    try:
+        await seed_admin()
+    except Exception as e:
+        logger.error(f"seed_admin failed (non-fatal): {e}")
     yield
     logger.info("Shutting down...")
 
