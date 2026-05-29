@@ -14,7 +14,11 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ENVIRONMENT: str = "production"
     SECRET_KEY: str
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "https://app.sed.energy"]
+    ALLOWED_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "https://app.sed.energy",
+        "https://sed-ai-marketing.vercel.app",
+    ]
 
     # ─── Database ────────────────────────────────────────────────────────────────
     DATABASE_URL: str
